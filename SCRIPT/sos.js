@@ -20,7 +20,7 @@ export function inicializarSOS() {
 
     if (!user) {
       alert("Debes iniciar sesión para activar una emergencia");
-      window.location.href = 'login.html';
+      window.location.href = '../docs/login.html';
       return;
     }
 
@@ -64,7 +64,7 @@ export function inicializarSOS() {
           alert(`🚨 ALERTA SOS ENVIADA CON ÉXITO 🚨\n\nLos voluntarios cercanos han sido notificados.\nMantén la calma, ayuda en camino.`);
 
           // Redirigir a la pantalla de emergencia
-          window.location.href = 'emergencia.html';
+          window.location.href = '../docs/emergencia.html';
 
         } catch (error) {
           console.error("Error al guardar alerta:", error);

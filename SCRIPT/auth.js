@@ -32,7 +32,7 @@ export function protegerRutaPrivada(onAutenticado) {
     if (user) {
       onAutenticado(user);
     } else {
-      window.location.href = 'login.html';
+      window.location.href = '../docs/login.html';
     }
   });
 }
@@ -83,7 +83,7 @@ export function usuarioActual() {
 export async function cerrarSesion() {
   try {
     await signOut(auth);
-    window.location.href = 'index.html';
+    window.location.href = '../docs/index.html';
   } catch (error) {
     console.error(error);
   }
