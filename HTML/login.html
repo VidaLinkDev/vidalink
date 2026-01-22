@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - VidaLink</title>
+    <link rel="icon" type="image/png" href="../RECURSOS/vidalink.png">
+    <link rel="stylesheet" href="../CSS/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+      <main class="d-flex align-items-center justify-content-center min-vh-100">
+      <div class="text-center p-5 bg-white rounded shadow" style="max-width: 420px; width: 90%;">
+        <img src="../RECURSOS/vidalink.png" alt="Emergencia" width="80" class="mb-4">
+        <h2 class="brand-title mb-3">Iniciar Sesión</h2>
+        <p class="subtitle mb-5">Accede para activar emergencias y ayudar a salvar vidas</p>
+
+        <form id="form-login">
+          <div class="mb-4">
+            <input type="email" id="email" class="form-control form-control-lg" placeholder="Correo electrónico" required>
+          </div>
+          <div class="mb-4">
+            <input type="password" id="password" class="form-control form-control-lg" placeholder="Contraseña" required>
+          </div>
+          <button type="submit" class="btn btn-danger btn-lg w-100">Iniciar Sesión</button>
+          <div class="my-4">
+  <div class="dropdown-divider"></div>
+  <p class="text-center text-muted small mb-2">O continúa con</p>
+</div>
+
+<button type="button" id="btnGoogle" class="btn btn-outline-secondary btn-lg w-100 d-flex align-items-center justify-content-center gap-2">
+  <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20">
+  Iniciar sesión con Google
+</button>
+        </form>
+
+        <p class="mt-4 text-muted">
+          ¿No tienes cuenta? <a href="registro.html" class="text-danger fw-bold">Regístrate aquí</a>
+        </p>
+        <p><a href="index.html" class="text-secondary">← Volver al inicio</a></p>
+
+        <div id="mensaje-error" class="text-danger mt-3 fw-bold"></div>
+      </div>
+    </main>
+
+    <script type="module">
+  import { auth, db } from '../SCRIPT/firebase-init.js';
+  import { iniciarSesion, iniciarSesionConGoogle } from '../SCRIPT/auth.js';
+  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+  import { showCustomAlert } from '../SCRIPT/utils.js';
+
+  // Función para redirigir según perfil
+  async function redirigirSegunPerfil(user) {
+    if (!user) return;
+    try {
+      const docRef = doc(db, "usuarios", user.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists() && docSnap.data().esVoluntario) {
+        window.location.href = 'voluntarios.html';
+      } else {
+        window.location.href = 'index.html';
+      }
+    } catch (error) {
+      console.error("Error al verificar perfil:", error);
+      window.location.href = 'index.html'; // fallback seguro
+    }
+  }
+
+  // 1. Listener principal: detecta cambios de estado (incluyendo después del popup)
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      console.log("Usuario detectado:", user.email);
+      await redirigirSegunPerfil(user);
+    }
+  });
+
+  // 2. Al cargar la página: verifica si YA hay usuario autenticado
+  if (auth.currentUser) {
+    console.log("Usuario ya autenticado al cargar:", auth.currentUser.email);
+    await redirigirSegunPerfil(auth.currentUser);
+  }
+
+  // Formulario email/contraseña
+  document.getElementById('form-login').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const resultado = await iniciarSesion(email, password);
+    if (!resultado.success) {
+      showCustomAlert('Error', 'Correo o contraseña incorrectos');
+    }
+    // Si éxito → onAuthStateChanged lo detecta y redirige
+  });
+
+  // Botón Google
+  document.getElementById('btnGoogle')?.addEventListener('click', async () => {
+    console.log("Iniciando login con Google...");
+    const resultado = await iniciarSesionConGoogle();
+    if (!resultado.success) {
+      showCustomAlert('Error con Google', resultado.error || 'No se pudo iniciar sesión con Google');
+    } else {
+      console.log("Login con Google exitoso, esperando redirección...");
+      // No redirigimos aquí → onAuthStateChanged lo hará automáticamente
+    }
+  });
+</script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    </body>
+</html>

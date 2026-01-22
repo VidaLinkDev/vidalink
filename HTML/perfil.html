@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil | VidaLink</title>
+  <link rel="icon" type="image/png" href="../RECURSOS/vidalink.png">
+  <link rel="stylesheet" href="../CSS/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+  <nav class="navbar bg-body-tertiary navbar-compact">
+    <div class="container-fluid">
+      <div class="d-flex align-items-center gap-2">
+        <img src="../RECURSOS/logo.png" alt="Logo" width="200" height="55">
+      </div>
+      <div class="d-flex align-items-center gap-3 ms-auto">
+        <button type="button" class="btn btn-outline-secondary" onclick="location.href='index.html'">Volver al inicio</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6">
+        <div class="card shadow-lg border-0 rounded-4 p-4">
+          <div class="card-body">
+            <h2 class="brand-title text-center mb-4">Mi Perfil</h2>
+            <p class="text-muted text-center mb-5">Actualiza tus datos personales</p>
+
+            <form id="formPerfil">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label fw-bold">Primer nombre</label>
+                  <input type="text" class="form-control" id="primerNombre" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold">Segundo nombre</label>
+                  <input type="text" class="form-control" id="segundoNombre">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold">Primer apellido</label>
+                  <input type="text" class="form-control" id="primerApellido" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold">Segundo apellido</label>
+                  <input type="text" class="form-control" id="segundoApellido">
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-bold">Celular <span class="text-danger">*</span></label>
+                  <input type="tel" class="form-control" id="celular" required>
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-bold">Correo electrónico</label>
+                  <input type="email" class="form-control" id="email" disabled>
+                </div>
+                <div class="col-12 mt-4">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="esVoluntario">
+                    <label class="form-check-label fw-bold" for="esVoluntario">
+                      Quiero ser voluntario y ayudar en emergencias cercanas
+                    </label>
+                  </div>
+                </div>
+                <div class="col-12 mt-3" id="estadoVoluntarioSection" style="display: none;">
+                  <label class="form-label fw-bold">Estado como voluntario</label>
+                  <button type="button" id="btnToggleEstado" class="btn w-100">
+                    Cargando estado...
+                  </button>
+                </div>
+                <div class="col-12 mt-4">
+                  <button type="submit" class="btn btn-danger btn-lg w-100 fw-bold">
+                    Guardar cambios
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+  import { db } from '../SCRIPT/firebase-init.js';
+  import { protegerRutaPrivada } from '../SCRIPT/auth.js';
+  import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+  import { showCustomAlert } from '../SCRIPT/utils.js';
+
+  protegerRutaPrivada(async (user) => {
+
+    const form = document.getElementById('formPerfil');
+    const usuarioRef = doc(db, "usuarios", user.uid);
+    const userDoc = await getDoc(usuarioRef);
+    const data = userDoc.exists() ? userDoc.data() : {};
+
+    document.getElementById('primerNombre').value =
+      data.primerNombre || user.displayName?.split(' ')[0] || '';
+
+    document.getElementById('segundoNombre').value = data.segundoNombre || '';
+    document.getElementById('primerApellido').value =
+      data.primerApellido || user.displayName?.split(' ').slice(-1)[0] || '';
+
+    document.getElementById('segundoApellido').value = data.segundoApellido || '';
+    document.getElementById('celular').value = data.celular || '';
+    document.getElementById('email').value = user.email || '';
+    document.getElementById('esVoluntario').checked = data.esVoluntario || false;
+
+    const section = document.getElementById('estadoVoluntarioSection');
+    section.style.display = data.esVoluntario ? 'block' : 'none';
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const datos = {
+        primerNombre: document.getElementById('primerNombre').value.trim(),
+        segundoNombre: document.getElementById('segundoNombre').value.trim() || null,
+        primerApellido: document.getElementById('primerApellido').value.trim(),
+        segundoApellido: document.getElementById('segundoApellido').value.trim() || null,
+        celular: document.getElementById('celular').value.trim(),
+        esVoluntario: document.getElementById('esVoluntario').checked
+      };
+
+      try {
+        await updateDoc(usuarioRef, datos);
+        showCustomAlert('¡Perfecto!', 'Datos actualizados');
+        setTimeout(() => location.href = 'index.html', 1500);
+      } catch {
+        showCustomAlert('Error', 'No se pudieron guardar los cambios');
+      }
+    });
+  });
+</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+  <footer class="site-footer">
+    <p>No reemplazamos ambulancias, las complementamos con ayuda ciudadana.</p>
+    <p>&copy; 2025 VidaLink. All rights reserved.</p>
+  </footer>
+</body>
+</html>
