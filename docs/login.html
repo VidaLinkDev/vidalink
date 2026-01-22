@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - VidaLink</title>
-    <link rel="icon" type="image/png" href="../RECURSOS/vidalink.png">
-    <link rel="stylesheet" href="../CSS/styles.css">
+    <link rel="icon" type="image/png" href="RECURSOS/vidalink.png">
+    <link rel="stylesheet" href="CSS/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
   </head>
   <body>
       <main class="d-flex align-items-center justify-content-center min-vh-100">
       <div class="text-center p-5 bg-white rounded shadow" style="max-width: 420px; width: 90%;">
-        <img src="../RECURSOS/vidalink.png" alt="Emergencia" width="80" class="mb-4">
+        <img src="RECURSOS/vidalink.png" alt="Emergencia" width="80" class="mb-4">
         <h2 class="brand-title mb-3">Iniciar Sesión</h2>
         <p class="subtitle mb-5">Accede para activar emergencias y ayudar a salvar vidas</p>
 
@@ -45,10 +45,10 @@
     </main>
 
     <script type="module">
-  import { auth, db } from '../SCRIPT/firebase-init.js';
-  import { iniciarSesion, iniciarSesionConGoogle } from '../SCRIPT/auth.js';
+  import { auth, db } from 'SCRIPT/firebase-init.js';
+  import { iniciarSesion, iniciarSesionConGoogle } from 'SCRIPT/auth.js';
   import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
-  import { showCustomAlert } from '../SCRIPT/utils.js';
+  import { showCustomAlert } from 'SCRIPT/utils.js';
 
   // Función para redirigir según perfil
   async function redirigirSegunPerfil(user) {
@@ -90,23 +90,13 @@
     if (!resultado.success) {
       showCustomAlert('Error', 'Correo o contraseña incorrectos');
     }
-    // Si éxito → onAuthStateChanged lo detecta y redirige
   });
 
   // Botón Google
-  document.getElementById('btnGoogle')?.addEventListener('click', async () => {
-    console.log("Iniciando login con Google...");
-    const resultado = await iniciarSesionConGoogle();
-    if (!resultado.success) {
-      showCustomAlert('Error con Google', resultado.error || 'No se pudo iniciar sesión con Google');
-    } else {
-      console.log("Login con Google exitoso, esperando redirección...");
-      // No redirigimos aquí → onAuthStateChanged lo hará automáticamente
-    }
+  document.getElementById('btnGoogle').addEventListener('click', async () => {
+    const res = await iniciarSesionConGoogle();
+    if (!res.success) showCustomAlert('Error', res.message || 'No se pudo iniciar con Google');
   });
 </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
-    </body>
+</body>
 </html>
