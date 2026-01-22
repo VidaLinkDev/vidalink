@@ -1,6 +1,7 @@
 // SCRIPT/auth.js
 
 import { auth, db } from './firebase-init.js';
+
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -18,28 +19,27 @@ import {
 
 /**
  * Observa el estado de autenticación
- * ÚNICA fuente de verdad para saber si hay sesión
+ * ÚNICA fuente confiable de sesión
  */
 export function observarEstadoAuth(callback) {
   return onAuthStateChanged(auth, callback);
 }
 
 /**
- * Protege páginas privadas (perfil, voluntarios, etc.)
+ * Protege páginas privadas
  */
 export function protegerRutaPrivada(onAutenticado) {
   observarEstadoAuth(user => {
     if (user) {
       onAutenticado(user);
     } else {
-      window.location.href = '../docs/login.html';
+      window.location.href = 'login.html'; // ✅ CORREGIDO
     }
   });
 }
 
 /**
  * Login con email y contraseña
- * ❌ SIN redirecciones aquí
  */
 export async function iniciarSesion(email, password) {
   try {
@@ -51,7 +51,7 @@ export async function iniciarSesion(email, password) {
 }
 
 /**
- * Registro de usuario
+ * Registro
  */
 export async function registrarse(email, password, esVoluntario = false) {
   try {
@@ -71,10 +71,11 @@ export async function registrarse(email, password, esVoluntario = false) {
 }
 
 /**
- * Obtener usuario actual (sincrónico)
+ * ❌ NO usar auth.currentUser directamente en Pages
+ * ✅ Usar onAuthStateChanged
  */
-export function usuarioActual() {
-  return auth.currentUser;
+export function obtenerUsuario(callback) {
+  observarEstadoAuth(user => callback(user));
 }
 
 /**
@@ -83,7 +84,7 @@ export function usuarioActual() {
 export async function cerrarSesion() {
   try {
     await signOut(auth);
-    window.location.href = '../docs/index.html';
+    window.location.href = 'index.html'; // ✅ CORREGIDO
   } catch (error) {
     console.error(error);
   }
@@ -94,6 +95,7 @@ export async function cerrarSesion() {
  */
 export async function iniciarSesionConGoogle() {
   const provider = new GoogleAuthProvider();
+
   try {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
@@ -103,8 +105,6 @@ export async function iniciarSesionConGoogle() {
 
     if (!snap.exists()) {
       await setDoc(usuarioRef, {
-        primerNombre: user.displayName?.split(' ')[0] || '',
-        primerApellido: user.displayName?.split(' ').slice(-1)[0] || '',
         email: user.email,
         esVoluntario: false,
         fechaRegistro: new Date()
